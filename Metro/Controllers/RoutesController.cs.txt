@@ -1,0 +1,96 @@
+using Metro.Core.DTOs;
+using Metro.Core.Interfaces;
+using Metro.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Metro.Controllers
+{
+    public class RoutesController : Controller
+    {
+        // ── Dependencies (injected via constructor) ────────────────────────────
+        private readonly IStationRepository _stationRepository;
+        private readonly IMetroService      _metroService;
+
+        public RoutesController(
+            IStationRepository stationRepository,
+            IMetroService      metroService)
+        {
+            _stationRepository = stationRepository;
+            _metroService      = metroService;
+        }
+
+        // ── GET /Routes/Index ─────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var viewModel = new RouteSearchViewModel
+            {
+                Stations = await LoadStationsAsync()
+            };
+
+            return View(viewModel);
+        }
+
+        // ── POST /Routes/Index ────────────────────────────────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Index(RouteSearchViewModel model)
+        {
+            // ── 1. Validate – both stations must be selected ──────────────────
+            if (model.FromStationId is null || model.ToStationId is null)
+            {
+                model.ErrorMessage = "Please select both a departure station and a destination station.";
+                model.Stations     = await LoadStationsAsync();
+                return View(model);
+            }
+
+            // ── 2. Validate – start and end must differ ───────────────────────
+            if (model.FromStationId == model.ToStationId)
+            {
+                model.ErrorMessage = "Departure and destination stations cannot be the same.";
+                model.Stations     = await LoadStationsAsync();
+                return View(model);
+            }
+
+            // ── 3. Delegate route calculation entirely to the service ─────────
+            try
+            {
+                RouteResultDto result = await _metroService.GetRouteAsync(
+                    model.FromStationId.Value,
+                    model.ToStationId.Value);
+
+                model.Result   = result;
+                model.Stations = await LoadStationsAsync();
+            }
+            catch (Exception ex)
+            {
+                model.ErrorMessage = $"Could not calculate route: {ex.Message}";
+                model.Stations     = await LoadStationsAsync();
+            }
+
+            return View(model);
+        }
+
+        // ── Private Helpers ───────────────────────────────────────────────────
+
+        /// <summary>
+        /// Fetches all stations from the repository and maps them to
+        /// <see cref="StationOptionViewModel"/> for use in the dropdown.
+        /// </summary>
+        private async Task<List<StationOptionViewModel>> LoadStationsAsync()
+        {
+            var stations = await _stationRepository.GetAllAsync();
+
+            return stations
+                .Select(s => new StationOptionViewModel
+                {
+                    Id       = s.Id,
+                    Name     = s.Name,
+                    LineName = s.Line?.Name ?? string.Empty
+                })
+                .OrderBy(s => s.LineName)
+                .ThenBy(s => s.Name)
+                .ToList();
+        }
+    }
+}

@@ -1,0 +1,695 @@
+@model  Metro.ViewModels.RouteSearchViewModel
+@using Metro.Core.DTOs
+
+@{
+    ViewData["Title"] = "Find Your Route";
+
+    // Cast result once for use in the result section
+    var result = Model.Result as RouteResultDto;
+}
+
+@* ══════════════════════════════════════════════════════════════════
+   Page-scoped styles
+   ══════════════════════════════════════════════════════════════════ *@
+<style>
+    /* ── CSS Variables ───────────────────────────────────────────── */
+    :root {
+        --metro-red:        #e63946;
+        --metro-red-dark:   #c1121f;
+        --metro-blue:       #1d3557;
+        --metro-blue-mid:   #457b9d;
+        --metro-light:      #f1faee;
+        --metro-accent:     #a8dadc;
+        --metro-card-bg:    #ffffff;
+        --metro-shadow:     0 4px 24px rgba(0,0,0,.10);
+        --metro-radius:     14px;
+        --metro-transition: .25s ease;
+    }
+
+    /* ── Page layout ─────────────────────────────────────────────── */
+    .route-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1d3557 0%, #457b9d 60%, #a8dadc 100%);
+        padding: 2.5rem 1rem 4rem;
+    }
+
+    .route-page__inner {
+        max-width: 780px;
+        margin: 0 auto;
+    }
+
+    /* ── Page header ─────────────────────────────────────────────── */
+    .route-header {
+        text-align: center;
+        margin-bottom: 2.2rem;
+    }
+
+    .route-header__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        background: rgba(255,255,255,.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,.25);
+        border-radius: 50px;
+        padding: .35rem 1.1rem;
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 600;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    .route-header__title {
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: #fff;
+        margin: 0 0 .5rem;
+        line-height: 1.15;
+        text-shadow: 0 2px 12px rgba(0,0,0,.18);
+    }
+
+    .route-header__subtitle {
+        color: rgba(255,255,255,.80);
+        font-size: 1.05rem;
+        margin: 0;
+    }
+
+    /* ── Glass card ──────────────────────────────────────────────── */
+    .glass-card {
+        background: rgba(255,255,255,.92);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,.6);
+        border-radius: var(--metro-radius);
+        box-shadow: var(--metro-shadow);
+        padding: 2rem 2.2rem;
+        margin-bottom: 1.5rem;
+        transition: box-shadow var(--metro-transition);
+    }
+
+    .glass-card:hover {
+        box-shadow: 0 8px 36px rgba(0,0,0,.14);
+    }
+
+    /* ── Form labels ─────────────────────────────────────────────── */
+    .form-label-custom {
+        font-size: .82rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--metro-blue);
+        margin-bottom: .45rem;
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .form-label-custom svg {
+        flex-shrink: 0;
+    }
+
+    /* ── Select dropdowns ────────────────────────────────────────── */
+    .route-select {
+        display: block;
+        width: 100%;
+        padding: .75rem 2.5rem .75rem 1rem;
+        font-size: .97rem;
+        color: var(--metro-blue);
+        background-color: var(--metro-light);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%231d3557' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right .85rem center;
+        background-size: 14px;
+        border: 2px solid #d0dde8;
+        border-radius: 9px;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: border-color var(--metro-transition), box-shadow var(--metro-transition);
+        cursor: pointer;
+    }
+
+    .route-select:focus {
+        outline: none;
+        border-color: var(--metro-blue-mid);
+        box-shadow: 0 0 0 3px rgba(69,123,157,.20);
+    }
+
+    .route-select option[value=""] {
+        color: #8fa3b1;
+    }
+
+    /* ── Stations row divider ────────────────────────────────────── */
+    .stations-swap-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: .8rem 0;
+        color: var(--metro-blue-mid);
+    }
+
+    /* ── Find Route button ───────────────────────────────────────── */
+    .btn-find-route {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .55rem;
+        width: 100%;
+        padding: .9rem 1.5rem;
+        background: linear-gradient(135deg, var(--metro-red) 0%, var(--metro-red-dark) 100%);
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        border: none;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: transform var(--metro-transition), box-shadow var(--metro-transition), filter var(--metro-transition);
+        box-shadow: 0 4px 14px rgba(230,57,70,.35);
+        margin-top: 1.4rem;
+    }
+
+    .btn-find-route:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(230,57,70,.45);
+        filter: brightness(1.06);
+    }
+
+    .btn-find-route:active {
+        transform: translateY(0);
+    }
+
+    /* ── Validation messages ─────────────────────────────────────── */
+    .validation-summary-custom {
+        background: #fff3cd;
+        border: 1.5px solid #ffc107;
+        border-left: 5px solid #ffc107;
+        border-radius: 9px;
+        padding: .85rem 1.1rem;
+        margin-top: 1.1rem;
+        font-size: .92rem;
+        color: #856404;
+        display: flex;
+        align-items: flex-start;
+        gap: .6rem;
+    }
+
+    .validation-summary-custom ul {
+        margin: 0;
+        padding-left: 1.2rem;
+    }
+
+    /* ── Error message ───────────────────────────────────────────── */
+    .error-message-box {
+        background: #fff0f0;
+        border: 1.5px solid var(--metro-red);
+        border-left: 5px solid var(--metro-red);
+        border-radius: 9px;
+        padding: .9rem 1.2rem;
+        margin-top: 1rem;
+        color: var(--metro-red-dark);
+        font-size: .95rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+    }
+
+    /* ── Result card ─────────────────────────────────────────────── */
+    .result-card {
+        animation: slideUp .4s cubic-bezier(.25,.8,.25,1) forwards;
+    }
+
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(28px); }
+        to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    .result-card__header {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        margin-bottom: 1.4rem;
+        padding-bottom: .9rem;
+        border-bottom: 2px solid var(--metro-accent);
+    }
+
+    .result-card__header-icon {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, var(--metro-blue) 0%, var(--metro-blue-mid) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .result-card__title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--metro-blue);
+        margin: 0;
+    }
+
+    /* ── Route summary grid ──────────────────────────────────────── */
+    .route-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: .85rem;
+        margin-bottom: 1.6rem;
+    }
+
+    .route-stat {
+        background: var(--metro-light);
+        border: 1.5px solid #d0dde8;
+        border-radius: 10px;
+        padding: .85rem 1rem;
+        text-align: center;
+        transition: transform var(--metro-transition), border-color var(--metro-transition);
+    }
+
+    .route-stat:hover {
+        transform: translateY(-3px);
+        border-color: var(--metro-blue-mid);
+    }
+
+    .route-stat__icon {
+        font-size: 1.5rem;
+        margin-bottom: .3rem;
+    }
+
+    .route-stat__value {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--metro-blue);
+        line-height: 1.1;
+    }
+
+    .route-stat__label {
+        font-size: .75rem;
+        color: #6c8ea4;
+        font-weight: 600;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        margin-top: .2rem;
+    }
+
+    /* ── Endpoint pill ───────────────────────────────────────────── */
+    .endpoint-row {
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        margin-bottom: 1.2rem;
+        flex-wrap: wrap;
+    }
+
+    .endpoint-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .45rem 1rem;
+        border-radius: 50px;
+        font-size: .9rem;
+        font-weight: 700;
+    }
+
+    .endpoint-pill--from {
+        background: #e3f4e4;
+        color: #1a7431;
+        border: 1.5px solid #b7deba;
+    }
+
+    .endpoint-pill--to {
+        background: #fde8e8;
+        color: var(--metro-red-dark);
+        border: 1.5px solid #f5b8b8;
+    }
+
+    .endpoint-arrow {
+        color: #8fa3b1;
+        font-size: 1.1rem;
+    }
+
+    /* ── Station path list ───────────────────────────────────────── */
+    .station-path-title {
+        font-size: .82rem;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        color: var(--metro-blue-mid);
+        margin-bottom: .9rem;
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .station-path-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        position: relative;
+    }
+
+    /* Vertical track line */
+    .station-path-list::before {
+        content: '';
+        position: absolute;
+        left: 17px;
+        top: 12px;
+        bottom: 12px;
+        width: 3px;
+        background: linear-gradient(180deg, #1a7431 0%, var(--metro-blue-mid) 50%, var(--metro-red) 100%);
+        border-radius: 3px;
+    }
+
+    .station-path-list li {
+        display: flex;
+        align-items: center;
+        gap: .8rem;
+        padding: .5rem 0 .5rem 44px;
+        position: relative;
+        font-size: .95rem;
+        color: var(--metro-blue);
+        transition: background var(--metro-transition);
+        border-radius: 8px;
+    }
+
+    .station-path-list li:hover {
+        background: rgba(168,218,220,.18);
+    }
+
+    /* Station dot */
+    .station-path-list li::before {
+        content: '';
+        position: absolute;
+        left: 11px;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid var(--metro-blue-mid);
+        z-index: 1;
+        transition: border-color var(--metro-transition), transform var(--metro-transition);
+    }
+
+    .station-path-list li:first-child::before {
+        border-color: #1a7431;
+        background: #e3f4e4;
+    }
+
+    .station-path-list li:last-child::before {
+        border-color: var(--metro-red);
+        background: #fde8e8;
+    }
+
+    .station-path-list li:hover::before {
+        transform: scale(1.25);
+    }
+
+    .station-number {
+        font-size: .74rem;
+        font-weight: 700;
+        color: #8fa3b1;
+        min-width: 1.5rem;
+        text-align: right;
+    }
+
+    .station-name {
+        font-weight: 600;
+    }
+
+    /* ── Responsive tweaks ───────────────────────────────────────── */
+    @@media (max-width: 576px) {
+        .glass-card { padding: 1.4rem 1.2rem; }
+        .route-header__title { font-size: 1.7rem; }
+        .route-summary-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+</style>
+
+<div class="route-page">
+    <div class="route-page__inner">
+
+        @* ── Page header ──────────────────────────────────────────────── *@
+        <div class="route-header">
+            <div class="route-header__badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+                </svg>
+                Cairo Metro
+            </div>
+            <h1 class="route-header__title">Find Your Route</h1>
+            <p class="route-header__subtitle">Select your departure and destination stations to get started</p>
+        </div>
+
+        @* ── Search form card ─────────────────────────────────────────── *@
+        <div class="glass-card">
+            <form id="route-search-form" asp-controller="Routes" asp-action="Index" method="post">
+                @Html.AntiForgeryToken()
+
+                @* From station *@
+                <div>
+                    <label class="form-label-custom" for="FromStationId">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        Departure Station
+                    </label>
+                    <select id="FromStationId"
+                            name="FromStationId"
+                            class="route-select"
+                            required>
+                        <option value="">— Select departure station —</option>
+                        @foreach (var station in Model.Stations)
+                        {
+                            if (Model.FromStationId.HasValue && Model.FromStationId.Value == station.Id)
+                            {
+                                <option value="@station.Id" selected>@station.Name - @station.LineName</option>
+                            }
+                            else
+                            {
+                                <option value="@station.Id">@station.Name - @station.LineName</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                @* Swap arrow divider *@
+                <div class="stations-swap-icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 3l4 4-4 4"/><path d="M3 7h18"/>
+                        <path d="M7 21l-4-4 4-4"/><path d="M21 17H3"/>
+                    </svg>
+                </div>
+
+                @* To station *@
+                <div>
+                    <label class="form-label-custom" for="ToStationId">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        Destination Station
+                    </label>
+                    <select id="ToStationId"
+                            name="ToStationId"
+                            class="route-select"
+                            required>
+                        <option value="">— Select destination station —</option>
+                        @foreach (var station in Model.Stations)
+                        {
+                            if (Model.ToStationId.HasValue && Model.ToStationId.Value == station.Id)
+                            {
+                                <option value="@station.Id" selected>@station.Name - @station.LineName</option>
+                            }
+                            else
+                            {
+                                <option value="@station.Id">@station.Name - @station.LineName</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                @* ── Validation messages ──────────────────────────────────── *@
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div id="validation-summary" class="validation-summary-custom" role="alert">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                             style="flex-shrink:0;margin-top:2px">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <div>
+                            @Html.ValidationSummary(false, null, new { @class = "" })
+                        </div>
+                    </div>
+                }
+
+                @* ── Error message ────────────────────────────────────────── *@
+                @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                {
+                    <div id="error-message" class="error-message-box" role="alert">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"
+                             style="flex-shrink:0">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        @Model.ErrorMessage
+                    </div>
+                }
+
+                @* ── Find Route button ────────────────────────────────────── *@
+                <button id="find-route-btn" type="submit" class="btn-find-route">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    Find Route
+                </button>
+
+            </form>
+        </div>
+
+        @* ── Result section ───────────────────────────────────────────── *@
+        @if (result != null)
+        {
+            <div id="route-result" class="glass-card result-card">
+
+                @* Card header *@
+                <div class="result-card__header">
+                    <div class="result-card__header-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                             stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                    </div>
+                    <h2 class="result-card__title">Route Result</h2>
+                </div>
+
+                @* From / To endpoint pills *@
+                <div class="endpoint-row">
+                    <span class="endpoint-pill endpoint-pill--from">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        @result.FromStationName
+                    </span>
+                    <span class="endpoint-arrow">→</span>
+                    <span class="endpoint-pill endpoint-pill--to">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        @result.ToStationName
+                    </span>
+                </div>
+
+                @* Summary stats grid *@
+                <div class="route-summary-grid">
+                    <div class="route-stat">
+                        <div class="route-stat__icon">🚉</div>
+                        <div class="route-stat__value">@result.StationCount</div>
+                        <div class="route-stat__label">Stations</div>
+                    </div>
+                    <div class="route-stat">
+                        <div class="route-stat__icon">🔄</div>
+                        <div class="route-stat__value">@result.Transfers</div>
+                        <div class="route-stat__label">Transfers</div>
+                    </div>
+                    <div class="route-stat">
+                        <div class="route-stat__icon">💳</div>
+                        <div class="route-stat__value">@result.Price.ToString("F2") EGP</div>
+                        <div class="route-stat__label">Price</div>
+                    </div>
+                    <div class="route-stat">
+                        <div class="route-stat__icon">⏱️</div>
+                        <div class="route-stat__value">@result.EstimatedTimeMinutes min</div>
+                        <div class="route-stat__label">Est. Time</div>
+                    </div>
+                </div>
+
+                @* Station path *@
+                <div class="station-path-title">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    Stations Path
+                </div>
+
+                <ol class="station-path-list" id="stations-path-list">
+                    @for (int i = 0; i < result.Stations.Count; i++)
+                    {
+                        <li>
+                            <span class="station-number">@(i + 1).</span>
+                            <span class="station-name">@result.Stations[i]</span>
+                        </li>
+                    }
+                </ol>
+
+            </div>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        // ── Prevent same-station submission ──────────────────────────────
+        document.getElementById('route-search-form').addEventListener('submit', function (e) {
+            var from = document.getElementById('FromStationId').value;
+            var to   = document.getElementById('ToStationId').value;
+
+            if (!from || !to) {
+                // Let server-side handle the "both required" message
+                return;
+            }
+
+            if (from === to) {
+                e.preventDefault();
+                showClientError('Departure and destination stations cannot be the same.');
+            }
+        });
+
+        function showClientError(msg) {
+            // Remove any existing client-error banner
+            var existing = document.getElementById('client-error-banner');
+            if (existing) existing.remove();
+
+            var banner = document.createElement('div');
+            banner.id = 'client-error-banner';
+            banner.setAttribute('role', 'alert');
+            banner.className = 'error-message-box';
+            banner.style.marginTop = '1rem';
+            banner.innerHTML =
+                '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+                'stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">' +
+                '<circle cx="12" cy="12" r="10"/>' +
+                '<line x1="12" y1="8" x2="12" y2="12"/>' +
+                '<line x1="12" y1="16" x2="12.01" y2="16"/></svg> ' + msg;
+
+            var btn = document.getElementById('find-route-btn');
+            btn.parentNode.insertBefore(banner, btn);
+        }
+
+        // ── Scroll result into view on page load (after POST) ────────────
+        (function () {
+            var result = document.getElementById('route-result');
+            if (result) {
+                result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        })();
+    </script>
+}

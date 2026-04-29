@@ -1,0 +1,334 @@
+﻿@{
+    ViewData["Title"] = "Cairo Metro";
+    var stations = ViewBag.Stations;
+    var routeStations = ViewBag.RouteStations;
+}
+
+<main class="home-page">
+
+    <!-- NAVBAR -->
+    <nav class="home-nav">
+        <a href="#home" class="nav-brand">
+            <img src="~/images/metro-logo.jpg" alt="Cairo Metro Logo" />
+            <span>Cairo Metro</span>
+        </a>
+
+        <div class="nav-links">
+            <a href="#planner">Plan Trip</a>
+            <a href="#lines">Lines</a>
+            <a href="#features">Features</a>
+            <button id="themeToggle" type="button">Dark</button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section id="home" class="hero-section">
+        <div class="hero-content reveal">
+            <span class="hero-badge">Cairo Smart Transportation</span>
+
+            <h1>Plan Your Cairo Metro Journey In Seconds</h1>
+
+            <p>
+                A modern metro guide that helps passengers explore lines, plan trips,
+                and move across Cairo with a fast and elegant experience.
+            </p>
+
+            <div class="hero-actions">
+                <a href="#planner" class="primary-btn">Plan Your Trip</a>
+                <a href="#lines" class="secondary-btn">Explore Lines</a>
+            </div>
+        </div>
+
+        <div class="hero-image reveal">
+            <img src="~/images/metro-train.jpg" alt="Modern Metro Train" />
+        </div>
+    </section>
+
+    <!-- TRIP PLANNER -->
+    <section id="planner" class="planner-section reveal">
+        <div class="section-title">
+            <span>Trip Planner</span>
+            <h2>Choose Your Route</h2>
+            <p>Select your start and destination stations from the home page.</p>
+        </div>
+
+        <form method="post" asp-controller="Home" asp-action="Index" class="planner-card">
+            <div class="form-group">
+                <label>From Station</label>
+
+                <select name="fromStationId" id="fromStation" required>
+                    <option value="">Select start station</option>
+
+                    @if (stations != null)
+                    {
+                        foreach (var station in stations)
+                        {
+                            <option value="@station.Id" selected="@(ViewBag.FromStationId == station.Id)">
+                                @station.Name
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <button id="swapBtn" class="swap-btn" type="button">⇄</button>
+
+            <div class="form-group">
+                <label>To Station</label>
+
+                <select name="toStationId" id="toStation" required>
+                    <option value="">Select destination station</option>
+
+                    @if (stations != null)
+                    {
+                        foreach (var station in stations)
+                        {
+                            <option value="@station.Id" selected="@(ViewBag.ToStationId == station.Id)">
+                                @station.Name
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <button class="primary-btn planner-btn" type="submit">
+                Calculate Trip
+            </button>
+        </form>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="trip-result error-box">
+                <h3>Invalid Trip</h3>
+                <p>@ViewBag.Error</p>
+            </div>
+        }
+
+        @if (routeStations != null)
+        {
+            var transfers = new List<dynamic>();
+
+            for (int i = 1; i < routeStations.Count; i++)
+            {
+                if (routeStations[i].LineId != routeStations[i - 1].LineId)
+                {
+                    transfers.Add(routeStations[i]);
+                }
+            }
+
+            var lineGroups = new List<List<dynamic>>();
+            var currentGroup = new List<dynamic>();
+
+            for (int i = 0; i < routeStations.Count; i++)
+            {
+                if (i == 0)
+                {
+                    currentGroup.Add(routeStations[i]);
+                }
+                else
+                {
+                    if (routeStations[i].LineId == routeStations[i - 1].LineId)
+                    {
+                        currentGroup.Add(routeStations[i]);
+                    }
+                    else
+                    {
+                        lineGroups.Add(currentGroup);
+                        currentGroup = new List<dynamic>();
+                        currentGroup.Add(routeStations[i - 1]);
+                        currentGroup.Add(routeStations[i]);
+                    }
+                }
+            }
+
+            if (currentGroup.Count > 0)
+            {
+                lineGroups.Add(currentGroup);
+            }
+
+            <div class="route-output">
+
+                <!-- ROUTE SUMMARY -->
+                <div class="summary-card">
+                    <div class="summary-top">
+                        <h3>Route Summary</h3>
+                        <span>⇄ @transfers.Count Transfer</span>
+                    </div>
+
+                    <div class="summary-stations">
+                        <div>
+                            <small>From</small>
+                            <strong>@routeStations[0].Name</strong>
+                            <span>Line @routeStations[0].LineId</span>
+                        </div>
+
+                        <b>→</b>
+
+                        <div>
+                            <small>To</small>
+                            <strong>@routeStations[routeStations.Count - 1].Name</strong>
+                            <span>Line @routeStations[routeStations.Count - 1].LineId</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-stats">
+                        <div>
+                            <strong>@ViewBag.StationCount</strong>
+                            <span>Stations</span>
+                        </div>
+
+                        <div>
+                            <strong>@ViewBag.Price EGP</strong>
+                            <span>Ticket</span>
+                        </div>
+
+                        <div>
+                            <strong>@transfers.Count</strong>
+                            <span>Transfers</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TRANSFER STATIONS -->
+                <div class="transfer-card">
+                    <h3>Transfer Stations</h3>
+
+                    @if (transfers.Count == 0)
+                    {
+                        <p>No transfers needed for this route.</p>
+                    }
+                    else
+                    {
+                        <div class="transfer-list">
+                            @foreach (var station in transfers)
+                            {
+                                <div class="transfer-item">
+                                    <span></span>
+
+                                    <div>
+                                        <strong>@station.Name</strong>
+                                        <small>Transfer to Line @station.LineId</small>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <!-- ROUTE DETAILS -->
+                <div class="details-card">
+                    <h3>Route Details</h3>
+
+                    <div class="route-lines-wrapper">
+                        @foreach (var group in lineGroups)
+                        {
+                            var lineId = group[0].LineId;
+                            var lineClass = lineId == 1 ? "line-red" : lineId == 2 ? "line-blue" : "line-green";
+
+                            <div class="route-line-section">
+                                <div class="route-line-header @lineClass">
+                                    <span></span>
+                                    <strong>Line @lineId</strong>
+                                    <small>@group.Count stations</small>
+                                </div>
+
+                                <div class="route-line-list">
+                                    @for (int i = 0; i < group.Count; i++)
+                                    {
+                                        var station = group[i];
+
+                                        var isTransfer = false;
+
+                                        if (transfers.Any(t => t.Name == station.Name))
+                                        {
+                                            isTransfer = true;
+                                        }
+
+                                        if (i == 0 && group != lineGroups.First())
+                                        {
+                                            isTransfer = true;
+                                        }
+
+                                        <div class="station-row @(isTransfer ? "transfer-row" : "") @lineClass">
+                                            <span class="station-dot"></span>
+
+                                            <div>
+                                                <strong>@station.Name</strong>
+                                                <small>Line @station.LineId</small>
+                                            </div>
+
+                                            @if (isTransfer)
+                                            {
+                                                <em>Transfer</em>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        }
+
+    </section>
+
+    <!-- LINES -->
+    <section id="lines" class="lines-section reveal">
+        <div class="section-title">
+            <span>Metro Network</span>
+            <h2>Cairo Metro Lines</h2>
+            <p>Clean and simple overview of the main metro lines.</p>
+        </div>
+
+        <div class="lines-grid">
+            <div class="line-card red-line">
+                <strong>Line 1</strong>
+                <h3>Helwan - El Marg</h3>
+                <p>The main north-south metro route across Cairo.</p>
+            </div>
+
+            <div class="line-card blue-line">
+                <strong>Line 2</strong>
+                <h3>Shubra - El Mounib</h3>
+                <p>A central route connecting major districts and stations.</p>
+            </div>
+
+            <div class="line-card green-line">
+                <strong>Line 3</strong>
+                <h3>Airport Corridor</h3>
+                <p>A modern expanding line for faster city movement.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="features-section reveal">
+        <div class="section-title">
+            <span>Features</span>
+            <h2>Built For Daily Passengers</h2>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <span>⚡</span>
+                <h3>Fast Planning</h3>
+                <p>Quickly choose stations and view trip details from one page.</p>
+            </div>
+
+            <div class="feature-card">
+                <span>🧭</span>
+                <h3>Shortest Route</h3>
+                <p>Uses the backend route algorithm to calculate the best path.</p>
+            </div>
+
+            <div class="feature-card">
+                <span>🌗</span>
+                <h3>Dark & Light Mode</h3>
+                <p>Switch between modern dark and bright modes instantly.</p>
+            </div>
+        </div>
+    </section>
+
+</main>
