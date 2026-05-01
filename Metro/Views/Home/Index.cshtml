@@ -6,6 +6,453 @@
 
 <main class="home-page">
 
+    <style>
+    /* ── CSS Variables ───────────────────────────────────────────── */
+    :root {
+        --metro-red:        #e63946;
+        --metro-red-dark:   #c1121f;
+        --metro-blue:       #1d3557;
+        --metro-blue-mid:   #457b9d;
+        --metro-light:      #f1faee;
+        --metro-accent:     #a8dadc;
+        --metro-card-bg:    #ffffff;
+        --metro-shadow:     0 4px 24px rgba(0,0,0,.10);
+        --metro-radius:     14px;
+        --metro-transition: .25s ease;
+    }
+
+    /* ── Page layout ─────────────────────────────────────────────── */
+    .route-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1d3557 0%, #457b9d 60%, #a8dadc 100%);
+        padding: 2.5rem 1rem 4rem;
+    }
+
+    .route-page__inner {
+        max-width: 780px;
+        margin: 0 auto;
+    }
+
+    /* ── Page header ─────────────────────────────────────────────── */
+    .route-header {
+        text-align: center;
+        margin-bottom: 2.2rem;
+    }
+
+    .route-header__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        background: rgba(255,255,255,.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,.25);
+        border-radius: 50px;
+        padding: .35rem 1.1rem;
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 600;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    .route-header__title {
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: #fff;
+        margin: 0 0 .5rem;
+        line-height: 1.15;
+        text-shadow: 0 2px 12px rgba(0,0,0,.18);
+    }
+
+    .route-header__subtitle {
+        color: rgba(255,255,255,.80);
+        font-size: 1.05rem;
+        margin: 0;
+    }
+
+    /* ── Glass card ──────────────────────────────────────────────── */
+    .glass-card {
+        background: rgba(255,255,255,.92);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,.6);
+        border-radius: var(--metro-radius);
+        box-shadow: var(--metro-shadow);
+        padding: 2rem 2.2rem;
+        margin-bottom: 1.5rem;
+        transition: box-shadow var(--metro-transition);
+    }
+
+    .glass-card:hover {
+        box-shadow: 0 8px 36px rgba(0,0,0,.14);
+    }
+
+    /* ── Form labels ─────────────────────────────────────────────── */
+    .form-label-custom {
+        font-size: .82rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--metro-blue);
+        margin-bottom: .45rem;
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .form-label-custom svg {
+        flex-shrink: 0;
+    }
+
+    /* ── Select dropdowns ────────────────────────────────────────── */
+    .route-select {
+        display: block;
+        width: 100%;
+        padding: .75rem 2.5rem .75rem 1rem;
+        font-size: .97rem;
+        color: var(--metro-blue);
+        background-color: var(--metro-light);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%231d3557' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right .85rem center;
+        background-size: 14px;
+        border: 2px solid #d0dde8;
+        border-radius: 9px;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: border-color var(--metro-transition), box-shadow var(--metro-transition);
+        cursor: pointer;
+    }
+
+    .route-select:focus {
+        outline: none;
+        border-color: var(--metro-blue-mid);
+        box-shadow: 0 0 0 3px rgba(69,123,157,.20);
+    }
+
+    .route-select option[value=""] {
+        color: #8fa3b1;
+    }
+
+    /* ── Stations row divider ────────────────────────────────────── */
+    .stations-swap-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: .8rem 0;
+        color: var(--metro-blue-mid);
+    }
+
+    /* ── Find Route button ───────────────────────────────────────── */
+    .btn-find-route {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .55rem;
+        width: 100%;
+        padding: .9rem 1.5rem;
+        background: linear-gradient(135deg, var(--metro-red) 0%, var(--metro-red-dark) 100%);
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        border: none;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: transform var(--metro-transition), box-shadow var(--metro-transition), filter var(--metro-transition);
+        box-shadow: 0 4px 14px rgba(230,57,70,.35);
+        margin-top: 1.4rem;
+    }
+
+    .btn-find-route:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(230,57,70,.45);
+        filter: brightness(1.06);
+    }
+
+    .btn-find-route:active {
+        transform: translateY(0);
+    }
+
+    /* ── Validation messages ─────────────────────────────────────── */
+    .validation-summary-custom {
+        background: #fff3cd;
+        border: 1.5px solid #ffc107;
+        border-left: 5px solid #ffc107;
+        border-radius: 9px;
+        padding: .85rem 1.1rem;
+        margin-top: 1.1rem;
+        font-size: .92rem;
+        color: #856404;
+        display: flex;
+        align-items: flex-start;
+        gap: .6rem;
+    }
+
+    .validation-summary-custom ul {
+        margin: 0;
+        padding-left: 1.2rem;
+    }
+
+    /* ── Error message ───────────────────────────────────────────── */
+    .error-message-box {
+        background: #fff0f0;
+        border: 1.5px solid var(--metro-red);
+        border-left: 5px solid var(--metro-red);
+        border-radius: 9px;
+        padding: .9rem 1.2rem;
+        margin-top: 1rem;
+        color: var(--metro-red-dark);
+        font-size: .95rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+    }
+
+    /* ── Result card ─────────────────────────────────────────────── */
+    .result-card {
+        animation: slideUp .4s cubic-bezier(.25,.8,.25,1) forwards;
+    }
+
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(28px); }
+        to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    .result-card__header {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        margin-bottom: 1.4rem;
+        padding-bottom: .9rem;
+        border-bottom: 2px solid var(--metro-accent);
+    }
+
+    .result-card__header-icon {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, var(--metro-blue) 0%, var(--metro-blue-mid) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .result-card__title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--metro-blue);
+        margin: 0;
+    }
+
+    /* ── Route summary grid ──────────────────────────────────────── */
+    .route-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: .85rem;
+        margin-bottom: 1.6rem;
+    }
+
+    .route-stat {
+        background: var(--metro-light);
+        border: 1.5px solid #d0dde8;
+        border-radius: 10px;
+        padding: .85rem 1rem;
+        text-align: center;
+        transition: transform var(--metro-transition), border-color var(--metro-transition);
+    }
+
+    .route-stat:hover {
+        transform: translateY(-3px);
+        border-color: var(--metro-blue-mid);
+    }
+
+    .route-stat__icon {
+        font-size: 1.5rem;
+        margin-bottom: .3rem;
+    }
+
+    .route-stat__value {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--metro-blue);
+        line-height: 1.1;
+    }
+
+    .route-stat__label {
+        font-size: .75rem;
+        color: #6c8ea4;
+        font-weight: 600;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        margin-top: .2rem;
+    }
+
+    /* ── Endpoint pill ───────────────────────────────────────────── */
+    .endpoint-row {
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        margin-bottom: 1.2rem;
+        flex-wrap: wrap;
+    }
+
+    .endpoint-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .45rem 1rem;
+        border-radius: 50px;
+        font-size: .9rem;
+        font-weight: 700;
+    }
+
+    .endpoint-pill--from {
+        background: #e3f4e4;
+        color: #1a7431;
+        border: 1.5px solid #b7deba;
+    }
+
+    .endpoint-pill--to {
+        background: #fde8e8;
+        color: var(--metro-red-dark);
+        border: 1.5px solid #f5b8b8;
+    }
+
+    .endpoint-arrow {
+        color: #8fa3b1;
+        font-size: 1.1rem;
+    }
+
+    /* ── Station path list ───────────────────────────────────────── */
+    .station-path-title {
+        font-size: .82rem;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        color: var(--metro-blue-mid);
+        margin-bottom: .9rem;
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .station-path-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        position: relative;
+    }
+
+    /* Vertical track line */
+    .station-path-list::before {
+        content: '';
+        position: absolute;
+        left: 17px;
+        top: 12px;
+        bottom: 12px;
+        width: 3px;
+        background: linear-gradient(180deg, #1a7431 0%, var(--metro-blue-mid) 50%, var(--metro-red) 100%);
+        border-radius: 3px;
+    }
+
+    .station-path-list li {
+        display: flex;
+        align-items: center;
+        gap: .8rem;
+        padding: .5rem 0 .5rem 44px;
+        position: relative;
+        font-size: .95rem;
+        color: var(--metro-blue);
+        transition: background var(--metro-transition);
+        border-radius: 8px;
+    }
+
+    .station-path-list li:hover {
+        background: rgba(168,218,220,.18);
+    }
+
+    /* Station dot */
+    .station-path-list li::before {
+        content: '';
+        position: absolute;
+        left: 11px;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid var(--metro-blue-mid);
+        z-index: 1;
+        transition: border-color var(--metro-transition), transform var(--metro-transition);
+    }
+
+    .station-path-list li:first-child::before {
+        border-color: #1a7431;
+        background: #e3f4e4;
+    }
+
+    .station-path-list li:last-child::before {
+        border-color: var(--metro-red);
+        background: #fde8e8;
+    }
+
+    .station-path-list li:hover::before {
+        transform: scale(1.25);
+    }
+
+    .station-number {
+        font-size: .74rem;
+        font-weight: 700;
+        color: #8fa3b1;
+        min-width: 1.5rem;
+        text-align: right;
+    }
+
+    .station-name {
+        font-weight: 600;
+    }
+
+    /* ── Metro Line Colors ───────────────────────── */
+
+.line-red .station-dot,
+.route-line-header.line-red span {
+    background: #e63946;
+}
+
+.line-blue .station-dot,
+.route-line-header.line-blue span {
+    background: #2563eb;
+}
+
+.line-green .station-dot,
+.route-line-header.line-green span {
+    background: #10b981;
+}
+
+/* Header text colors */
+
+.route-line-header.line-red strong {
+    color: #e63946;
+}
+
+.route-line-header.line-blue strong {
+    color: #2563eb;
+}
+
+.route-line-header.line-green strong {
+    color: #10b981;
+}
+
+    /* ── Responsive tweaks ───────────────────────────────────────── */
+    @@media (max-width: 576px) {
+        .glass-card { padding: 1.4rem 1.2rem; }
+        .route-header__title { font-size: 1.7rem; }
+        .route-summary-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+</style>
+
     <!-- NAVBAR -->
     <nav class="home-nav">
         <a href="#home" class="nav-brand">
@@ -135,7 +582,7 @@
                     {
                         lineGroups.Add(currentGroup);
                         currentGroup = new List<dynamic>();
-                        currentGroup.Add(routeStations[i - 1]);
+               
                         currentGroup.Add(routeStations[i]);
                     }
                 }
@@ -250,7 +697,7 @@
                                         }
 
                                         <div class="station-row @(isTransfer ? "transfer-row" : "") @lineClass">
-                                            <span class="station-dot"></span>
+                                            <span class="station-dot @lineClass"></span>
 
                                             <div>
                                                 <strong>@station.Name</strong>
@@ -303,32 +750,6 @@
         </div>
     </section>
 
-    <!-- FEATURES -->
-    <section id="features" class="features-section reveal">
-        <div class="section-title">
-            <span>Features</span>
-            <h2>Built For Daily Passengers</h2>
-        </div>
-
-        <div class="features-grid">
-            <div class="feature-card">
-                <span>⚡</span>
-                <h3>Fast Planning</h3>
-                <p>Quickly choose stations and view trip details from one page.</p>
-            </div>
-
-            <div class="feature-card">
-                <span>🧭</span>
-                <h3>Shortest Route</h3>
-                <p>Uses the backend route algorithm to calculate the best path.</p>
-            </div>
-
-            <div class="feature-card">
-                <span>🌗</span>
-                <h3>Dark & Light Mode</h3>
-                <p>Switch between modern dark and bright modes instantly.</p>
-            </div>
-        </div>
-    </section>
+   
 
 </main>
