@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "targets": {
     "net8.0": {
       "Azure.Core/1.38.0": {
@@ -4520,23 +4520,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\abohe\\.nuget\\packages\\": {},
+    "C:\\Users\\Abdo\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Study\\Year 3 - Second Term\\WDT Project\\Metro Project\\Cairo Metro\\Metro.Data\\Metro.Data.csproj",
+      "projectUniqueName": "C:\\Users\\Abdo\\Documents\\Projects\\ASP.NET Core\\Cairo Metro\\Metro.Data\\Metro.Data.csproj",
       "projectName": "Metro.Data",
-      "projectPath": "D:\\Study\\Year 3 - Second Term\\WDT Project\\Metro Project\\Cairo Metro\\Metro.Data\\Metro.Data.csproj",
-      "packagesPath": "C:\\Users\\abohe\\.nuget\\packages\\",
-      "outputPath": "D:\\Study\\Year 3 - Second Term\\WDT Project\\Metro Project\\Cairo Metro\\Metro.Data\\obj\\",
+      "projectPath": "C:\\Users\\Abdo\\Documents\\Projects\\ASP.NET Core\\Cairo Metro\\Metro.Data\\Metro.Data.csproj",
+      "packagesPath": "C:\\Users\\Abdo\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Abdo\\Documents\\Projects\\ASP.NET Core\\Cairo Metro\\Metro.Data\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\abohe\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Abdo\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -4549,10 +4549,11 @@
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\Study\\Year 3 - Second Term\\WDT Project\\Metro Project\\Cairo Metro\\Metro.Core\\Metro.Core.csproj": {
-              "projectPath": "D:\\Study\\Year 3 - Second Term\\WDT Project\\Metro Project\\Cairo Metro\\Metro.Core\\Metro.Core.csproj"
+            "C:\\Users\\Abdo\\Documents\\Projects\\ASP.NET Core\\Cairo Metro\\Metro.Core\\Metro.Core.csproj": {
+              "projectPath": "C:\\Users\\Abdo\\Documents\\Projects\\ASP.NET Core\\Cairo Metro\\Metro.Core\\Metro.Core.csproj"
             }
           }
         }
@@ -4567,10 +4568,11 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.200"
+      "SdkAnalysisLevel": "10.0.300"
     },
     "frameworks": {
       "net8.0": {
+        "framework": "net8.0",
         "targetAlias": "net8.0",
         "dependencies": {
           "Microsoft.EntityFrameworkCore.InMemory": {
@@ -4612,7 +4614,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

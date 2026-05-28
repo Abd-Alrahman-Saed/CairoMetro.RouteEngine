@@ -2,5 +2,4 @@
   <Project Path="../Metro.Core/Metro.Core.csproj" />
   <Project Path="../Metro.Data/Metro.Data.csproj" />
   <Project Path="Metro.csproj" />
-  <Project Path="Metro.Tests/Metro.Tests.csproj" />
 </Solution>

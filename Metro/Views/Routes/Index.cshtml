@@ -419,6 +419,93 @@
         font-weight: 600;
     }
 
+    /* ── Tom Select custom styling ───────────────────────────────── */
+    .ts-control {
+        border: 2px solid #d0dde8;
+        border-radius: 9px;
+        padding: .75rem 1rem;
+        font-size: .97rem;
+        color: var(--metro-blue);
+        background-color: var(--metro-light);
+        transition: border-color var(--metro-transition), box-shadow var(--metro-transition);
+    }
+    .ts-control.focus {
+        border-color: var(--metro-blue-mid);
+        box-shadow: 0 0 0 3px rgba(69,123,157,.20);
+    }
+    .ts-wrapper.single .ts-control:after {
+        border-color: var(--metro-blue) transparent transparent transparent;
+    }
+
+    /* ── Map ─────────────────────────────────────────────────────── */
+    .map-card {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    #map {
+        height: 350px;
+        border-radius: 10px;
+        width: 100%;
+        background-color: #e5e5e5;
+        position: relative;
+        z-index: 1;
+    }
+    .use-location-btn {
+        background: transparent;
+        border: 1px solid var(--metro-blue-mid);
+        color: var(--metro-blue-mid);
+        border-radius: 50px;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        transition: all var(--metro-transition);
+        margin-left: auto;
+    }
+    .use-location-btn:hover {
+        background: var(--metro-blue-mid);
+        color: #fff;
+    }
+    .use-location-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    .label-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: .45rem;
+    }
+    .form-label-custom {
+        margin-bottom: 0;
+    }
+    .map-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255,255,255,0.8);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: 10px;
+        display: none;
+    }
+    .map-overlay.active {
+        display: flex;
+    }
+    .spinner {
+        width: 30px; height: 30px;
+        border: 3px solid #d0dde8;
+        border-top-color: var(--metro-blue-mid);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 0.5rem;
+    }
+    @@keyframes spin { 100% { transform: rotate(360deg); } }
+
     /* ── Responsive tweaks ───────────────────────────────────────── */
     @@media (max-width: 576px) {
         .glass-card { padding: 1.4rem 1.2rem; }
@@ -450,13 +537,19 @@
 
                 @* From station *@
                 <div>
-                    <label class="form-label-custom" for="FromStationId">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
-                        </svg>
-                        Departure Station
-                    </label>
+                    <div class="label-row">
+                        <label class="form-label-custom" for="FromStationId">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            Departure Station
+                        </label>
+                        <button type="button" id="use-location-btn" class="use-location-btn" title="Find nearest station via GPS">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                            Use My Location
+                        </button>
+                    </div>
                     <select id="FromStationId"
                             name="FromStationId"
                             class="route-select"
@@ -558,6 +651,17 @@
             </form>
         </div>
 
+        @* ── Map card ─────────────────────────────────────────── *@
+        <div class="glass-card map-card">
+            <div id="map">
+                <div class="map-overlay" id="map-loading">
+                    <div class="spinner"></div>
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--metro-blue);">Detecting nearest station...</div>
+                </div>
+            </div>
+            <div id="map-error" class="error-message-box" style="display: none; margin-top: 1rem;"></div>
+        </div>
+
         @* ── Result section ───────────────────────────────────────────── *@
         @if (result != null)
         {
@@ -646,7 +750,124 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.default.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <script>
+        // ── Smart Searchable Dropdowns ─────────────────────────────
+        var tomSelectConfig = {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            maxOptions: null
+        };
+
+        var fromSelect = new TomSelect('#FromStationId', tomSelectConfig);
+        var toSelect = new TomSelect('#ToStationId', tomSelectConfig);
+
+        // ── Injected Data ──────────────────────────────────────────
+        window.stationsData = @Html.Raw(Json.Serialize(Model.Stations));
+
+        // ── Map & Geolocation ──────────────────────────────────────
+        var map = L.map('map').setView([30.0444, 31.2357], 11); // Cairo
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var userMarker, stationMarker, routeLine;
+
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        document.getElementById('use-location-btn').addEventListener('click', function() {
+            var btn = this;
+            var overlay = document.getElementById('map-loading');
+            var errorBox = document.getElementById('map-error');
+            
+            errorBox.style.display = 'none';
+            btn.disabled = true;
+            overlay.classList.add('active');
+
+            if (!navigator.geolocation) {
+                showMapError('Geolocation is not supported by your browser.');
+                resetLocationState();
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var userLat = position.coords.latitude;
+                var userLng = position.coords.longitude;
+
+                var nearestStation = null;
+                var minDistance = Infinity;
+
+                window.stationsData.forEach(function(station) {
+                    if (station.latitude && station.longitude) {
+                        var dist = haversineDistance(userLat, userLng, station.latitude, station.longitude);
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            nearestStation = station;
+                        }
+                    }
+                });
+
+                if (nearestStation) {
+                    fromSelect.setValue(nearestStation.id);
+
+                    if (userMarker) map.removeLayer(userMarker);
+                    if (stationMarker) map.removeLayer(stationMarker);
+                    if (routeLine) map.removeLayer(routeLine);
+
+                    userMarker = L.marker([userLat, userLng]).addTo(map).bindPopup("Your Location");
+                    stationMarker = L.marker([nearestStation.latitude, nearestStation.longitude])
+                                     .addTo(map).bindPopup("Nearest Station: " + nearestStation.name).openPopup();
+                    
+                    var latlngs = [
+                        [userLat, userLng],
+                        [nearestStation.latitude, nearestStation.longitude]
+                    ];
+                    routeLine = L.polyline(latlngs, {color: 'red', weight: 4, dashArray: '5, 10'}).addTo(map);
+                    
+                    map.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
+                } else {
+                    showMapError('No nearby stations found with valid coordinates.');
+                }
+                
+                resetLocationState();
+            }, function(error) {
+                var msg = 'Unable to retrieve your location.';
+                if (error.code == error.PERMISSION_DENIED) msg = 'Location permission was denied.';
+                showMapError(msg);
+                resetLocationState();
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            });
+
+            function resetLocationState() {
+                btn.disabled = false;
+                overlay.classList.remove('active');
+            }
+            
+            function showMapError(msg) {
+                errorBox.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ' + msg;
+                errorBox.style.display = 'flex';
+            }
+        });
+
         // ── Prevent same-station submission ──────────────────────────────
         document.getElementById('route-search-form').addEventListener('submit', function (e) {
             var from = document.getElementById('FromStationId').value;

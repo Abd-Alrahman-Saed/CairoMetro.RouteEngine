@@ -84,12 +84,13 @@ namespace Metro.Controllers
             return stations
                 .Select(s => new StationOptionViewModel
                 {
-                    Id       = s.Id,
-                    Name     = s.Name,
-                    LineName = s.Line?.Name ?? string.Empty
+                    Id        = s.Id,
+                    Name      = s.Name,
+                    LineName  = s.Line?.Name ?? string.Empty,
+                    Latitude  = s.Latitude,
+                    Longitude = s.Longitude
                 })
-                .OrderBy(s => s.LineName)
-                .ThenBy(s => s.Name)
+                .OrderBy(s => s.Name)
                 .ToList();
         }
     }
