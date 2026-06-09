@@ -1,12 +1,16 @@
 ﻿using Metro.Core.DTOs;
+using System.ComponentModel.DataAnnotations;
 
 namespace Metro.ViewModels
 {
     public class RouteSearchViewModel
     {
         // ── Form Input ────────────────────────────────────────────────────────
-        public int? FromStationId { get; set; }
-        public int? ToStationId { get; set; }
+        [Required(ErrorMessage = "Please select a departure station.")]
+        public int FromStationId { get; set; }
+
+        [Required(ErrorMessage = "Please select a destination station.")]
+        public int ToStationId { get; set; }
 
         // ── Dropdown Data ─────────────────────────────────────────────────────
         /// <summary>

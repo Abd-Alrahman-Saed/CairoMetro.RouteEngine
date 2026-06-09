@@ -36,8 +36,8 @@ namespace Metro.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(RouteSearchViewModel model)
         {
-            // ── 1. Validate – both stations must be selected ──────────────────
-            if (model.FromStationId is null || model.ToStationId is null)
+            // ── 1. Validate via ModelState (data annotations) ────────────────
+            if (!ModelState.IsValid)
             {
                 model.ErrorMessage = "Please select both a departure station and a destination station.";
                 model.Stations     = await LoadStationsAsync();
@@ -56,8 +56,8 @@ namespace Metro.Controllers
             try
             {
                 RouteResultDto result = await _metroService.GetRouteAsync(
-                    model.FromStationId.Value,
-                    model.ToStationId.Value);
+                    model.FromStationId!.Value,
+                    model.ToStationId!.Value);
 
                 model.Result   = result;
                 model.Stations = await LoadStationsAsync();
