@@ -7,10 +7,10 @@ namespace Metro.ViewModels
     {
         // ── Form Input ────────────────────────────────────────────────────────
         [Required(ErrorMessage = "Please select a departure station.")]
-        public int FromStationId { get; set; }
+        public int? FromStationId { get; set; }
 
         [Required(ErrorMessage = "Please select a destination station.")]
-        public int ToStationId { get; set; }
+        public int? ToStationId { get; set; }
 
         // ── Dropdown Data ─────────────────────────────────────────────────────
         /// <summary>

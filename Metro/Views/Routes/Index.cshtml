@@ -557,7 +557,7 @@
                         <option value="">— Select departure station —</option>
                         @foreach (var station in Model.Stations)
                         {
-                            if (Model.FromStationId.HasValue && Model.FromStationId.Value == station.Id)
+                            if (Model.FromStationId == station.Id)
                             {
                                 <option value="@station.Id" selected>@station.Name - @station.LineName</option>
                             }
@@ -595,7 +595,7 @@
                         <option value="">— Select destination station —</option>
                         @foreach (var station in Model.Stations)
                         {
-                            if (Model.ToStationId.HasValue && Model.ToStationId.Value == station.Id)
+                            if (Model.ToStationId == station.Id)
                             {
                                 <option value="@station.Id" selected>@station.Name - @station.LineName</option>
                             }
