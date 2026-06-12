@@ -5,17 +5,12 @@ namespace Metro.ViewModels
 {
     public class RouteSearchViewModel
     {
-        // ── Form Input ────────────────────────────────────────────────────────
         [Required(ErrorMessage = "Please select a departure station.")]
-        public int? FromStationId { get; set; }
+        public int FromStationId { get; set; }
 
         [Required(ErrorMessage = "Please select a destination station.")]
-        public int? ToStationId { get; set; }
+        public int ToStationId { get; set; }
 
-        // ── Dropdown Data ─────────────────────────────────────────────────────
-        /// <summary>
-        /// All available stations, populated on every GET and after a failed POST.
-        /// </summary>
         public List<StationOptionViewModel> Stations { get; set; } = new();
 
         // ── Result ────────────────────────────────────────────────────────────
@@ -25,10 +20,6 @@ namespace Metro.ViewModels
         /// </summary>
         public object? Result { get; set; }
 
-        // ── Feedback ──────────────────────────────────────────────────────────
-        /// <summary>
-        /// Validation or service error message shown to the user.
-        /// </summary>
         public string? ErrorMessage { get; set; }
     }
 }

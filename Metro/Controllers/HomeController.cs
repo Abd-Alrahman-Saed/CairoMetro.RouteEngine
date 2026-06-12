@@ -63,6 +63,51 @@ namespace Metro.Controllers
             return View();
         }
 
+        //public async Task<IActionResult> Index(int fromStationId, int toStationId)
+        //{
+        //    var stations = await _stationRepository.GetAllAsync();
+
+        //    var model = new RouteViewModel
+        //    {
+        //        Stations = stations,
+        //        FromStationId = fromStationId,
+        //        ToStationId = toStationId
+        //    };
+
+        //    if (fromStationId == toStationId)
+        //    {
+        //        model.ErrorMessage =
+        //            "Please choose two different stations.";
+
+        //        return View(model);
+        //    }
+
+        //    var pathIds =
+        //        await _routeService.GetShortestPathAsync(
+        //            fromStationId,
+        //            toStationId);
+
+        //    var routeStations = pathIds
+        //        .Select(id => stations.FirstOrDefault(s => s.Id == id))
+        //        .Where(s => s != null)
+        //        .ToList();
+
+        //    var stationCount = routeStations.Count;
+
+        //    var pricingRules =
+        //        await _pricingRuleRepository.GetAllAsync();
+
+        //    var price = pricingRules
+        //        .FirstOrDefault(rule => rule.IsMatch(stationCount))
+        //        ?.Price ?? 0;
+
+        //    model.RouteStations = routeStations!;
+        //    model.StationCount = stationCount;
+        //    model.Price = price;
+
+        //    return View(model);
+        //}
+
         public IActionResult Privacy()
         {
             return View();
